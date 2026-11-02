@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipShort — Video to Shorts</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#18223a;--text:#eef3ff;--muted:#9ba9c7;--accent:#7c5cff;--cyan:#22d3ee;--border:#263451}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#182345 0,#0b1020 55%);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,sans-serif;min-height:100vh}
+header{max-width:1120px;margin:auto;padding:28px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--cyan)}.tag{color:var(--muted);font-size:12px;border:1px solid var(--border);padding:6px 10px;border-radius:99px}
+main{max-width:1120px;margin:0 auto;padding:18px 22px 48px}.hero{margin:18px 0 26px}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.05;letter-spacing:-1.7px;margin:0 0 12px}.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--cyan),#a78bfa);-webkit-background-clip:text;color:transparent}.hero p{color:var(--muted);max-width:650px;margin:0}
+.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.panel{background:rgba(18,26,46,.92);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 20px 60px #0002}.panel h2{font-size:17px;margin:0 0 16px}.drop{border:1.5px dashed #46577d;background:#0e1629;border-radius:16px;padding:28px 18px;text-align:center;cursor:pointer;transition:.2s}.drop:hover,.drop.drag{border-color:var(--cyan);background:#111e35}.drop strong{display:block;font-size:16px;margin:8px 0}.drop small{color:var(--muted)}input[type=file]{display:none}
+.video-wrap{margin-top:16px;background:#060912;border-radius:14px;overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted)}video{display:block;max-width:100%;max-height:360px}.empty{padding:35px;text-align:center}
+.field{margin:17px 0}.field label{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#c7d2ea;margin-bottom:8px}.field input[type=number],select{width:100%;background:#0b1222;color:var(--text);border:1px solid var(--border);padding:11px 12px;border-radius:10px;font:inherit}
+.range-row{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:center}.range-row input{width:100%;accent:var(--accent)}.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:750;cursor:pointer;transition:.15s}.btn:disabled{opacity:.45;cursor:not-allowed}.primary{width:100%;background:linear-gradient(100deg,var(--accent),#5b8cff);color:white;box-shadow:0 8px 24px #6c5cff35}.secondary{background:#202c47;color:var(--text);border:1px solid var(--border)}.btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08)}
+.progress{height:8px;background:#0a1020;border-radius:99px;overflow:hidden;margin:14px 0 8px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width .2s}.status{font-size:12px;color:var(--muted);min-height:18px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:12px}.output{margin-top:18px}.output video{width:100%;max-height:420px;object-fit:contain;background:#05070c;border-radius:12px}.output-actions{display:flex;gap:10px;margin-top:12px}.output-actions .btn{flex:1}.notice{font-size:12px;color:var(--muted);margin-top:16px;padding:12px;background:#0d1527;border-radius:10px}
+footer{text-align:center;color:#6e7d9d;font-size:12px;padding:20px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}header{padding-top:20px}.settings{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){main{padding:12px}.panel{padding:15px}.range-row{grid-template-columns:1fr 82px}}
+</style>
+</head>
+<body>
+<header><div class="logo">Clip<span>Short</span> <small style="font-size:11px;color:#8290af">STUDIO</small></div><div class="tag">VIDEO CLIPPER · 30 SEC</div></header>
+<main>
+<section class="hero"><h1>Video panjang.<br><em>Shorts siap upload.</em></h1><p>Potong momen terbaik dari video kamu, ubah ke format vertikal, lalu ekspor sebagai MP4.</p></section>
+<div class="layout">
+<section class="panel">
+<h2>① Upload video</h2>
+<div class="drop" id="drop"><div style="font-size:28px">⬆</div><strong>Seret video ke sini</strong><small>atau klik untuk memilih file · MP4, MOV, WebM</small><input type="file" id="file" accept="video/*"></div>
+<div class="video-wrap" id="videoWrap"><div class="empty">Preview video akan tampil di sini</div></div>
+<div class="field"><label>Durasi video <span id="durationText">—</span></label></div>
+<div class="field"><label for="start">Mulai klip (detik)</label><div class="range-row"><input id="startRange" type="range" min="0" max="0" step="0.1" value="0"><input id="start" type="number" min="0" step="0.1" value="0"></div></div>
+<div class="field"><label for="clipLength">Durasi klip</label><select id="clipLength"><option value="30" selected>30 detik (YouTube Shorts)</option><option value="15">15 detik</option><option value="20">20 detik</option><option value="45">45 detik</option><option value="60">60 detik</option></select><div class="hint">Durasi klip akan disesuaikan jika video sumber lebih pendek.</div></div>
+</section>
+<section class="panel">
+<h2>② Pengaturan ekspor</h2>
+<div class="settings">
+<div class="field"><label>Format</label><select id="format"><option value="vertical" selected>Vertikal 9:16</option><option value="original">Pertahankan rasio asli</option><option value="square">Kotak 1:1</option></select></div>
+<div class="field"><label>Resolusi</label><select id="resolution"><option value="1080" selected>1080p</option><option value="720">720p</option></select></div>
+<div class="field"><label>FPS</label><select id="fps"><option value="30" selected>30 FPS</option><option value="60">60 FPS</option></select></div>
+<div class="field"><label>Audio</label><select id="audio"><option value="yes" selected>Sertakan audio</option><option value="no">Tanpa audio</option></select></div>
+</div>
+<div class="notice">🔒 Video diproses langsung di browser perangkat kamu. File tidak diunggah ke server aplikasi. Proses pertama mungkin membutuhkan waktu untuk memuat mesin FFmpeg.</div>
+<button class="btn primary" id="make" disabled>✂️ Buat klip video</button>
+<div class="progress"><div class="bar" id="bar"></div></div><div class="status" id="status">Upload video untuk mulai.</div>
+<div class="output" id="output" hidden><h2>③ Hasil klip</h2><video id="resultVideo" controls playsinline></video><div class="output-actions"><a class="btn primary" id="download" download="clipshort.mp4" style="text-align:center;text-decoration:none">⬇ Download MP4</a><button class="btn secondary" id="reset">Buat klip lain</button></div></div>
+</section>
+</div>
+</main>
+<footer>ClipShort Studio · Dibuat untuk workflow YouTube Shorts</footer>
+<script type="module">
+import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
+
+const $=id=>document.getElementById(id);
+const ffmpeg=new FFmpeg();
+let sourceFile=null, sourceURL=null, outputURL=null, duration=0, loaded=false;
+const drop=$("drop"), fileInput=$("file");
+function setStatus(s){$("status").textContent=s}
+function setProgress(p){$("bar").style.width=Math.max(0,Math.min(100,p))+"%"}
+function fmt(s){if(!Number.isFinite(s))return "—";const m=Math.floor(s/60),sec=(s%60).toFixed(1);return `${m}:${sec.padStart(4,"0")}`}
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add("drag")};
+drop.ondragleave=()=>drop.classList.remove("drag");
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove("drag");if(e.dataTransfer.files[0])loadVideo(e.dataTransfer.files[0])};
+fileInput.onchange=()=>{if(fileInput.files[0])loadVideo(fileInput.files[0])};
+function loadVideo(file){
+ if(!file.type.startsWith("video/")){setStatus("File bukan video. Pilih file video.");return}
+ sourceFile=file;if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=URL.createObjectURL(file);
+ const v=document.createElement("video");v.src=sourceURL;v.controls=true;v.playsInline=true;
+ $("videoWrap").innerHTML="";$("videoWrap").appendChild(v);
+ v.onloadedmetadata=()=>{duration=v.duration;$("durationText").textContent=fmt(duration);const max=Math.max(0,duration-0.1);$("startRange").max=max;$("start").max=max;$("startRange").value=0;$("start").value=0;$("make").disabled=false;setStatus("Video siap. Tentukan bagian yang ingin dipotong.")};
+ drop.querySelector("strong").textContent=file.name;
+}
+$("startRange").oninput=()=>{$("start").value=$("startRange").value};
+$("start").oninput=()=>{let n=Math.max(0,Math.min(Number($("start").value)||0,duration));$("startRange").value=n};
+$("make").onclick=async()=>{
+ if(!sourceFile)return;
+ $("make").disabled=true;$("output").hidden=true;setProgress(0);
+ try{
+   if(!loaded){
+    setStatus("Memuat FFmpeg… (pertama kali bisa agak lama)");
+    ffmpeg.on("progress",({progress})=>setProgress(progress*100));
+    ffmpeg.on("log",({message})=>{if(message.includes("Error"))console.warn(message)});
+    const base="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+    await ffmpeg.load({coreURL:await toBlobURL(`${base}/ffmpeg-core.js`,"text/javascript"),wasmURL:await toBlobURL(`${base}/ffmpeg-core.wasm`,"application/wasm")});
+    loaded=true;
+   }
+   setStatus("Menyiapkan video…");
+   const ext=(sourceFile.name.split(".").pop()||"mp4").toLowerCase().replace(/[^a-z0-9]/g,"");
+   const inputName=`input.${ext}`, outputName="clip.mp4";
+   await ffmpeg.writeFile(inputName,await fetchFile(sourceFile));
+   const start=Math.max(0,Number($("start").value)||0);
+   const length=Math.min(Number($("clipLength").value),Math.max(.1,duration-start));
+   const res=Number($("resolution").value),fps=Number($("fps").value),format=$("format").value;
+   let vf;
+   if(format==="vertical")vf=`scale=${res}:${res*16/9}:force_original_aspect_ratio=increase,crop=${res}:${Math.round(res*16/9)},setsar=1`;
+   else if(format==="square")vf=`scale=${res}:${res}:force_original_aspect_ratio=increase,crop=${res}:${res},setsar=1`;
+   else vf=`scale=${res}:-2:force_original_aspect_ratio=decrease,setsar=1`;
+   const args=["-ss",String(start),"-i",inputName,"-t",String(length),"-vf",vf,"-r",String(fps),"-c:v","libx264","-preset","ultrafast","-crf","23","-pix_fmt","yuv420p"];
+   if($("audio").value==="yes")args.push("-c:a","aac","-b:a","128k");else args.push("-an");
+   args.push("-movflags","+faststart",outputName);
+   setStatus("Memotong dan mengonversi video…");
+   await ffmpeg.exec(args);
+   const data=await ffmpeg.readFile(outputName);
+   if(outputURL)URL.revokeObjectURL(outputURL);
+   outputURL=URL.createObjectURL(new Blob([data.buffer],{type:"video/mp4"}));
+   $("resultVideo").src=outputURL;$("download").href=outputURL;
+   $("download").download=`short-${Date.now()}.mp4`;
+   $("output").hidden=false;setProgress(100);setStatus("Selesai! Klip siap diunduh.");
+ }catch(err){console.error(err);setStatus("Gagal memproses video. Coba MP4 yang lebih kecil atau browser terbaru.");}
+ finally{$("make").disabled=false}
+};
+$("reset").onclick=()=>{$("output").hidden=true;$("resultVideo").removeAttribute("src");setProgress(0);setStatus("Atur titik mulai lalu buat klip lagi.")};
+window.addEventListener("beforeunload",()=>{if(sourceURL)URL.revokeObjectURL(sourceURL);if(outputURL)URL.revokeObjectURL(outputURL)});
+</script>
+</body>
+</html>
